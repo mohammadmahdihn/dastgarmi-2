@@ -1,5 +1,6 @@
 package com.example.dastgarmi2.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -8,7 +9,7 @@ import lombok.Data;
 public class Field {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long fieldId;
+    private Long id;
 
     private String fieldName;
     private String label;
@@ -17,5 +18,6 @@ public class Field {
 
     @ManyToOne
     @JoinColumn(name = "form_id")
+    @JsonIgnore
     private Form form;
 }

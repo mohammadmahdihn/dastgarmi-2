@@ -1,5 +1,6 @@
 package com.example.dastgarmi2.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -10,7 +11,7 @@ import java.util.List;
 public class Form {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long formId;
+    private Long id;
 
     private String name;
     private boolean published;
@@ -18,6 +19,4 @@ public class Form {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "form_id")
     private List<Field> fields;
-
-    // Getters and Setters
 }

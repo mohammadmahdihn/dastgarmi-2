@@ -22,7 +22,7 @@ public class FieldController {
 
     @GetMapping
     public List<Field> getFieldsByFormId(@PathVariable Long formId) {
-        return fieldRepository.findByFormFormId(formId);
+        return fieldRepository.findByFormId(formId);
     }
 
     @PostMapping
