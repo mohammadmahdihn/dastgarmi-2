@@ -1,6 +1,5 @@
 package com.example.dastgarmi2.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 

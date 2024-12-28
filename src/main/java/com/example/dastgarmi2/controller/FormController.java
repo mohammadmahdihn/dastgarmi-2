@@ -47,7 +47,7 @@ public class FormController {
     @PostMapping("/{id}/publish")
     public Form publishForm(@PathVariable Long id) {
         Form form = formRepository.findById(id).orElseThrow(() -> new RuntimeException("Form not found"));
-        form.setPublished(true);
+        form.setPublished(!form.isPublished());
         return formRepository.save(form);
     }
 
