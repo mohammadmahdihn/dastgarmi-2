@@ -4,6 +4,8 @@ import com.example.dastgarmi2.model.Field;
 import com.example.dastgarmi2.model.Form;
 import com.example.dastgarmi2.repository.FieldRepository;
 import com.example.dastgarmi2.repository.FormRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,24 +23,49 @@ public class FieldController {
     }
 
     @GetMapping
-    public List<Field> getFieldsByFormId(@PathVariable Long formId) {
-        return fieldRepository.findByFormId(formId);
+    public ResponseEntity<?> getFieldsByFormId(@PathVariable Long formId) {
+        try {
+            List<Field> fields = fieldRepository.findByFormId(formId);
+            if (fields.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("No fields found for form with ID " + formId);
+            }
+            return ResponseEntity.ok(fields);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to retrieve fields");
+        }
     }
 
     @PostMapping
-    public Field addFieldToForm(@PathVariable Long formId, @RequestBody Field field) {
-        Form form = formRepository.findById(formId).orElseThrow(() -> new RuntimeException("Form not found"));
-        field.setForm(form);
-        return fieldRepository.save(field);
+    public ResponseEntity<?> addFieldToForm(@PathVariable Long formId, @RequestBody Field field) {
+        try {
+            Form form = formRepository.findById(formId)
+                    .orElseThrow(() -> new RuntimeException("Form not found"));
+            field.setForm(form);
+            Field savedField = fieldRepository.save(field);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(savedField);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to add field");
+        }
     }
 
     @PutMapping("/{fieldId}")
-    public Field updateField(@PathVariable Long formId, @PathVariable Long fieldId, @RequestBody Field fieldDetails) {
-        Field field = fieldRepository.findById(fieldId).orElseThrow(() -> new RuntimeException("Field not found"));
-        field.setFieldName(fieldDetails.getFieldName());
-        field.setLabel(fieldDetails.getLabel());
-        field.setType(fieldDetails.getType());
-        field.setValue(fieldDetails.getValue());
-        return fieldRepository.save(field);
+    public ResponseEntity<?> updateField(@PathVariable Long formId, @PathVariable Long fieldId, @RequestBody Field fieldDetails) {
+        try {
+            Field field = fieldRepository.findById(fieldId)
+                    .orElseThrow(() -> new RuntimeException("Field not found"));
+            field.setFieldName(fieldDetails.getFieldName());
+            field.setLabel(fieldDetails.getLabel());
+            field.setType(fieldDetails.getType());
+            field.setValue(fieldDetails.getValue());
+            Field updatedField = fieldRepository.save(field);
+            return ResponseEntity.ok(updatedField);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to update field");
+        }
     }
 }

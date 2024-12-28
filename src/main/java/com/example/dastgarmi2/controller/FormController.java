@@ -1,7 +1,10 @@
 package com.example.dastgarmi2.controller;
 
+import com.example.dastgarmi2.model.Field;
 import com.example.dastgarmi2.model.Form;
 import com.example.dastgarmi2.repository.FormRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,42 +20,91 @@ public class FormController {
     }
 
     @GetMapping
-    public List<Form> getAllForms() {
-        return formRepository.findAll();
+    public ResponseEntity<?> getAllForms() {
+        try {
+            List<Form> forms = formRepository.findAll();
+            return ResponseEntity.ok(forms);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to retrieve forms: " + e.getMessage());
+        }
     }
 
     @PostMapping
-    public Form createForm(@RequestBody Form form) {
-        return formRepository.save(form);
+    public ResponseEntity<?> createForm(@RequestBody Form form) {
+        try {
+            for (Field field : form.getFields()) {
+                String type = field.getType();
+                if (!type.equals("text") && !type.equals("int") && !type.equals("boolean") && !type.equals("date")) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body("Unsupported field type: " + type);
+                }
+            }
+            formRepository.save(form);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body("Form created");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Form creation failed");
+        }
     }
 
     @GetMapping("/{id}")
-    public Form getFormById(@PathVariable Long id) {
-        return formRepository.findById(id).orElseThrow(() -> new RuntimeException("Form not found"));
+    public ResponseEntity<?> getFormById(@PathVariable Long id) {
+        try {
+            Form form = formRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Form not found"));
+            return ResponseEntity.ok(form);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error");
+        }
     }
 
     @PutMapping("/{id}")
-    public Form updateForm(@PathVariable Long id, @RequestBody Form formDetails) {
-        Form form = formRepository.findById(id).orElseThrow(() -> new RuntimeException("Form not found"));
-        form.setName(formDetails.getName());
-        form.setPublished(formDetails.isPublished());
-        return formRepository.save(form);
+    public ResponseEntity<?> updateForm(@PathVariable Long id, @RequestBody Form formDetails) {
+        try {
+            Form form = formRepository.findById(id).orElseThrow(() -> new RuntimeException("Form not found"));
+            form.setName(formDetails.getName());
+            form.setPublished(formDetails.isPublished());
+            return ResponseEntity.ok(formRepository.save(form));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Form update failed");
+        }
     }
 
     @DeleteMapping("/{id}")
-    public void deleteForm(@PathVariable Long id) {
-        formRepository.deleteById(id);
+    public ResponseEntity<?> deleteForm(@PathVariable Long id) {
+        try {
+            formRepository.deleteById(id);
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to delete form");
+        }
     }
 
     @PostMapping("/{id}/publish")
-    public Form publishForm(@PathVariable Long id) {
-        Form form = formRepository.findById(id).orElseThrow(() -> new RuntimeException("Form not found"));
-        form.setPublished(!form.isPublished());
-        return formRepository.save(form);
+    public ResponseEntity<?> publishForm(@PathVariable Long id) {
+        try {
+            Form form = formRepository.findById(id).orElseThrow(() -> new RuntimeException("Form not found"));
+            form.setPublished(!form.isPublished());
+            return ResponseEntity.ok(formRepository.save(form));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Form publishing failed");
+        }
     }
 
     @GetMapping("/published")
-    public List<Form> getPublishedForms() {
-        return formRepository.findByPublished(true);
+    public ResponseEntity<?> getPublishedForms() {
+        try {
+            List<Form> forms = formRepository.findByPublished(true);
+            return ResponseEntity.ok(forms);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to retrieve published forms");
+        }
     }
 }
